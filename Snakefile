@@ -412,6 +412,26 @@ rule generate_paper_plots:
         python {input.script_clean} {input.invmass} {input.v1fit} > {log.stdout} 2> {log.stderr}
         """
 
+rule test_fit_order:
+    """Diagnostic: check whether cubic dv1/dy fit is needed within |y| < y_cut.
+    Uses pre-existing fit CSVs for the given sys_tag (no new fitting triggered)."""
+    input:
+        fit_csvs=expand('result/sys_tag_{{sys_tag}}/fit_{particle}_v1_{energy}.csv',
+                        particle=config['particles'], energy=energies),
+        res_files=[data_files['0'][e] for e in energies],
+        script='scripts/test_fit_order.py'
+    output:
+        'plots/sys_tag_{sys_tag}/fit_order_test.pdf'
+    log:
+        stdout='logs/sys_tag_{sys_tag}/fit_order_test.log',
+        stderr='logs/sys_tag_{sys_tag}/fit_order_test.err'
+    shell:
+        'python {input.script} '
+        '--fit_csvs {input.fit_csvs} '
+        '--res_files {input.res_files} '
+        '--output {output} '
+        '> {log.stdout} 2> {log.stderr}'
+
 rule generate_spectrum:
     input: script='scripts/generate_spectrum.py',
            input_file=lambda wildcards: expand('plots/sys_tag_{sys_tag}/paper_yaml/invmass/{particle}_fit_v1_{energy}_invmass_cen4_y0.7.yaml', energy=['19p6GeV'], sys_tag=wildcards.sys_tag, particle=wildcards.particle)
