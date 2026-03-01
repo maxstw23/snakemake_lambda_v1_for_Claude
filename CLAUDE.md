@@ -13,6 +13,8 @@ This is a **Snakemake-based physics analysis pipeline** for measuring Lambda hyp
 conda env create -f environment.yaml
 # or update existing:
 sh update_env.sh
+# run with:
+conda activate lambda_v1
 ```
 
 The environment requires: snakemake, uproot, numpy, matplotlib, iminuit, scipy, uncertainties, mplhep, numba, ROOT (external, must be separately installed).
@@ -31,11 +33,7 @@ snakemake -n
 
 # Visualize the DAG
 sh create_dag.sh   # produces dag.pdf and rulegraph.pdf
-
-# Force re-run of specific targets (touch upstream, then run)
-sh force_a1.sh 19p6GeV
 ```
-
 
 ## Architecture
 
@@ -115,16 +113,11 @@ data/
 
 Intermediate results are serialized as YAML files in `plots/sys_tag_N/paper_yaml/`. These contain centrality-binned arrays for: x positions, v1 values, errors, dv1/dy slopes, and systematic breakdown (stat/sys split).
 
-## Performance Notes
-
-- Fitting the invariant mass spectrum and v1/v2 (`fit_v1.py`, `fit_v1_pt.py`) is very slow. Avoid triggering refits unless absolutely necessary — do not touch or delete `result/sys_tag_*/fit_*.csv` or `result/no_eff/fit_*.csv` files without good reason.
-
 ## Workflow Guidelines
 
 - Always run `snakemake -n` (dry run) before any real execution.
-- Never run the full workflow on real data without explicit confirmation.
+- Never run the full workflow on real data without explicit confirmation (or any step that involved `fit_v1.py` or `fit_v1_pt.py`).
 - Prefer small, focused commits over large sweeping changes.
-- Run linter/formatter after editing Python files: `ruff check . && ruff format .`
 - After editing a rule, always verify the DAG hasn't broken.
 
 ## Code Style
