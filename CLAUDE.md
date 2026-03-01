@@ -36,12 +36,6 @@ sh create_dag.sh   # produces dag.pdf and rulegraph.pdf
 sh force_a1.sh 19p6GeV
 ```
 
-## Testing
-
-```bash
-# Run the single unit test file
-cd scripts && python test_find_bin_center.py
-```
 
 ## Architecture
 
