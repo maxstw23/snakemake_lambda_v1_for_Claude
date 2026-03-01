@@ -115,6 +115,10 @@ data/
 
 Intermediate results are serialized as YAML files in `plots/sys_tag_N/paper_yaml/`. These contain centrality-binned arrays for: x positions, v1 values, errors, dv1/dy slopes, and systematic breakdown (stat/sys split).
 
+## Performance Notes
+
+- Fitting the invariant mass spectrum and v1/v2 (`fit_v1.py`, `fit_v1_pt.py`) is very slow. Avoid triggering refits unless absolutely necessary — do not touch or delete `result/sys_tag_*/fit_*.csv` or `result/no_eff/fit_*.csv` files without good reason.
+
 ## Workflow Guidelines
 
 - Always run `snakemake -n` (dry run) before any real execution.

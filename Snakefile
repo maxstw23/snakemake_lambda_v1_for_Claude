@@ -15,6 +15,8 @@ data_files = {'0': {energy: sorted(glob.glob(f'data/result*_{energy}.root'), key
 data_files.update({str(sys_tag): {energy: sorted(glob.glob(f'data/sys_tag_{sys_tag}/result*_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in energies} for sys_tag in [1,2,3]})
 
 eff_files = {energy: sorted(glob.glob(f'data/eff/result*_lambda_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['19p6GeV', '27GeV']}
+eff_files_lambdabar = {energy: sorted(glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['19p6GeV', '27GeV'] if glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root')}
+eff_files_all = {'lambda': eff_files, 'lambdabar': eff_files_lambdabar}
 rule all:
     input: 'plots/paper/report.pdf'
 
@@ -63,8 +65,8 @@ rule combine_lambda_with_eff:
 rule calculate_efficiency:
     input:
         script = 'scripts/calculate_lambda_eff.cpp',
-        data = lambda wildcards: eff_files[wildcards.energy]
-    output: 'result/eff/efficiency_lambda_{energy}.root'
+        data = lambda wildcards: eff_files_all[wildcards.particle][wildcards.energy]
+    output: 'result/eff/efficiency_{particle}_{energy}.root'
     params:
         y_cut = config["y_cut"]
     shell:
@@ -73,10 +75,13 @@ rule calculate_efficiency:
         """
 
 def get_combined_file(wildcards):
-    # Energies that currently have efficiency corrections ready
-    eff_energies = ["19p6GeV", "27GeV"]
-    
-    if wildcards.energy in eff_energies:
+    # Energies for which efficiency corrections are available, per particle
+    particle_eff_energies = {
+        'lambda':    list(eff_files.keys()),
+        'lambdabar': list(eff_files_lambdabar.keys()),
+    }
+    available = particle_eff_energies.get(wildcards.particle.lower(), [])
+    if wildcards.energy in available:
         return f"result/sys_tag_{wildcards.sys_tag}/combined_{wildcards.particle}_{wildcards.flow}_{wildcards.energy}_eff_corrected.root"
     else:
         return f"result/sys_tag_{wildcards.sys_tag}/combined_{wildcards.particle}_{wildcards.flow}_{wildcards.energy}.root"
@@ -103,6 +108,53 @@ rule fit_particle:
             --paper_plot_path {output.invmass_plot} \
             > {log.stdout} 2> {log.stderr}
         """
+
+rule fit_no_eff:
+    """Fit v1(y) on the non-efficiency-corrected combined ROOT file.
+    Used to compare against the eff-corrected fit_particle outputs."""
+    input:
+        data_file='result/sys_tag_0/combined_{particle}_{flow}_{energy}.root',
+        script='scripts/fit_v1.py'
+    output:
+        data_points='result/no_eff/fit_{particle}_{flow}_{energy}.csv'
+    params:
+        yrebin=lambda wildcards: config['yrebin'][wildcards.energy][wildcards.particle]
+    log:
+        stdout='logs/no_eff/fit_{particle}_{flow}_{energy}.log',
+        stderr='logs/no_eff/fit_{particle}_{flow}_{energy}.err'
+    shell:
+        """
+        python {input.script} {input.data_file} {output.data_points} \
+            --yrebin {params.yrebin} \
+            --max_refit 500 \
+            > {log.stdout} 2> {log.stderr}
+        """
+
+rule plot_eff_comparison:
+    """Compare eff-corrected vs no-eff v1 results for a given energy.
+    Produces a 3-page PDF: v1(y) grids for Lambda/Lambdabar + dv1/dy vs centrality."""
+    input:
+        paths_eff=lambda wildcards: expand(
+            'result/sys_tag_0/fit_{particle}_v1_{energy}.csv',
+            particle=config['particles'], energy=wildcards.energy),
+        paths_no_eff=lambda wildcards: expand(
+            'result/no_eff/fit_{particle}_v1_{energy}.csv',
+            particle=config['particles'], energy=wildcards.energy),
+        data_file=lambda wildcards: data_files['0'][wildcards.energy],
+        script='scripts/plot_eff_comparison.py'
+    output:
+        'plots/sys_tag_0/eff_comparison_{energy}.pdf'
+    log:
+        stdout='logs/eff_comparison_{energy}.log',
+        stderr='logs/eff_comparison_{energy}.err'
+    shell:
+        'python {input.script} '
+        '--paths_eff {input.paths_eff} '
+        '--paths_no_eff {input.paths_no_eff} '
+        '--fres {input.data_file} '
+        '--output {output} '
+        '--energy {wildcards.energy} '
+        '> {log.stdout} 2> {log.stderr}'
 
 rule fit_lambda_pt:
     input: data_file=get_combined_file,
