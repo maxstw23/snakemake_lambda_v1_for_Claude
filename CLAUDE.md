@@ -119,6 +119,7 @@ Intermediate results are serialized as YAML files in `plots/sys_tag_N/paper_yaml
 - Never run the full workflow on real data without explicit confirmation (or any step that involved `fit_v1.py` or `fit_v1_pt.py`).
 - Prefer small, focused commits over large sweeping changes.
 - After editing a rule, always verify the DAG hasn't broken.
+- For diagnostic test, you may use sys_tag_0 (default). Place figures in the correct directory. 
 
 ## Code Style
 
