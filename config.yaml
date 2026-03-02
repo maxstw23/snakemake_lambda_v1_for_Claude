@@ -17,7 +17,7 @@ merged_xi_cen_bins:
   11p5GeV: [[1,2],[3],[4],[5],[6],[7],[8],[9]]
   9p2GeV: [[1,2,3],[4],[5],[6],[7],[8],[9]]
   7p7GeV: [[1,2,3,4],[5,6,7],[8,9]]
-fit_order: {7p7GeV: 3, 9p2GeV: 3, 11p5GeV: 3, 14p6GeV: 3, 17p3GeV: 3, 19p6GeV: 3, 27GeV: 3} # do not change
+fit_order: {7p7GeV: 1, 9p2GeV: 1, 11p5GeV: 1, 14p6GeV: 1, 17p3GeV: 1, 19p6GeV: 1, 27GeV: 1}
 pt_lo: 0.4
 pt_hi: 1.8
 y_cut: 0.6
