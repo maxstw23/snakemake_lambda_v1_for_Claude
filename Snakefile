@@ -382,9 +382,11 @@ rule combine_sys:
            regular_sys=lambda wildcards: expand('plots/sys_tag_{sys_tag}/paper_yaml/dv1dy_coal_{energy}.yaml', sys_tag=[1,2,3], energy=wildcards.energy),
            special_sys=lambda wildcards: expand('plots/special_sys_tag_{sys_tag}/paper_yaml/dv1dy_coal_{energy}.yaml', sys_tag=[5,6], energy=wildcards.energy)
     output: 'plots/final/paper_yaml/dv1dy_coal_{energy}.yaml'
+    params:
+        sys_divisor = config['sys_divisor']
     log: stdout='logs/combine_sys_{energy}.log', stderr='logs/combine_sys_{energy}.err'
     shell:
-        'python {input.script} --default {input.default} --regular_sys {input.regular_sys} --special_sys {input.special_sys} --output {output} --energy {wildcards.energy} > {log.stdout} 2> {log.stderr}'
+        'python {input.script} --default {input.default} --regular_sys {input.regular_sys} --special_sys {input.special_sys} --output {output} --energy {wildcards.energy} --sys_divisor {params.sys_divisor} > {log.stdout} 2> {log.stderr}'
         
 rule blank:
     # generate a blank file

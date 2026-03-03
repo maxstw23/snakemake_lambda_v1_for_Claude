@@ -18,6 +18,7 @@ merged_xi_cen_bins:
   9p2GeV: [[1,2,3],[4],[5],[6],[7],[8],[9]]
   7p7GeV: [[1,2,3,4],[5,6,7],[8,9]]
 fit_order: {7p7GeV: 1, 9p2GeV: 1, 11p5GeV: 1, 14p6GeV: 1, 17p3GeV: 1, 19p6GeV: 1, 27GeV: 1}
+sys_divisor: 3
 pt_lo: 0.4
 pt_hi: 1.8
 y_cut: 0.6

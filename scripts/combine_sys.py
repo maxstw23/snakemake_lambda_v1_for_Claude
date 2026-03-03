@@ -4,7 +4,7 @@ import yaml
 import matplotlib.pyplot as plt
 
 
-def main(default, regular_sys, special_sys, output, energy):
+def main(default, regular_sys, special_sys, output, energy, sys_divisor):
     with open (default, 'r') as f:
         default_cut = yaml.load(f, Loader=yaml.CLoader)
     sys_cut = {}
@@ -40,10 +40,10 @@ def main(default, regular_sys, special_sys, output, energy):
                 print(f'\t{int(sys_tag):<10} {delta:<10.4f} {delta_err:<10.4f} {significance}')
                 if significance:
                     sum_of_unc += delta**2 - delta_err**2
-            print(f'\tTotal systematic uncertainty: {np.sqrt(sum_of_unc / 12):.4f}')
+            print(f'\tTotal systematic uncertainty: {np.sqrt(sum_of_unc / sys_divisor):.4f}')
             yerr_stat[val][cent] = default_cut['yerr'][cent]
-            yerr_sys[val][cent] = np.sqrt(sum_of_unc / 12)
-            new_yerr[val][cent] = np.sqrt(default_cut[err][cent]**2 + sum_of_unc / 12)
+            yerr_sys[val][cent] = np.sqrt(sum_of_unc / sys_divisor)
+            new_yerr[val][cent] = np.sqrt(default_cut[err][cent]**2 + sum_of_unc / sys_divisor)
         
         # basically use default_cut, but replace yerr with new_yerr
         default_cut[err] = new_yerr[val]
@@ -74,10 +74,10 @@ def main(default, regular_sys, special_sys, output, energy):
                 print(f'\t{int(sys_tag):<10} {delta:<10.4f} {delta_err:<10.4f} {significance}')
                 if significance:
                     sum_of_unc += delta**2 - delta_err**2
-            print(f'\tTotal systematic uncertainty: {np.sqrt(sum_of_unc / 12):.4f}')
+            print(f'\tTotal systematic uncertainty: {np.sqrt(sum_of_unc / sys_divisor):.4f}')
             yerr_stat = default_cut[pair_name]['error']
-            yerr_sys = np.sqrt(sum_of_unc / 12)
-            new_yerr = np.sqrt(default_cut[pair_name]['error']**2 + sum_of_unc / 12)
+            yerr_sys = np.sqrt(sum_of_unc / sys_divisor)
+            new_yerr = np.sqrt(default_cut[pair_name]['error']**2 + sum_of_unc / sys_divisor)
 
             default_cut[pair_name]['error'] = new_yerr
             default_cut[pair_name]['error_stat'] = yerr_stat
@@ -104,7 +104,7 @@ def main(default, regular_sys, special_sys, output, energy):
                 # significance is an boolean array
                 new_yerr += np.where(significance, delta**2 - delta_err**2, 0)
             yerr_stat = default_cut[pair_name]['error']
-            yerr_sys = np.sqrt(new_yerr / 12)
+            yerr_sys = np.sqrt(new_yerr / sys_divisor)
             default_cut[pair_name]['error'] = np.sqrt(yerr_stat**2 + yerr_sys**2)
             default_cut[pair_name]['error_stat'] = yerr_stat
             default_cut[pair_name]['error_sys'] = yerr_sys
@@ -120,7 +120,7 @@ def main(default, regular_sys, special_sys, output, energy):
                 # significance is an boolean array
                 new_yerr += np.where(significance, delta**2 - delta_err**2, 0)
             yerr_stat = default_cut[pair_name]['error']
-            yerr_sys = np.sqrt(new_yerr / 12)
+            yerr_sys = np.sqrt(new_yerr / sys_divisor)
             default_cut[pair_name]['error'] = np.sqrt(yerr_stat**2 + yerr_sys**2)
             default_cut[pair_name]['error_stat'] = yerr_stat
             default_cut[pair_name]['error_sys'] = yerr_sys
@@ -135,5 +135,6 @@ if __name__ == '__main__':
     parser.add_argument('--special_sys', type=str, help='Special systematic cut (use the same dataset as default)', nargs='+', required=True)
     parser.add_argument('--output', type=str, help='Output file', required=True)
     parser.add_argument('--energy', type=str, help='Energy', required=True)
+    parser.add_argument('--sys_divisor', type=float, help='Divisor for systematic uncertainty (3 for half-width uniform, 12 for full-width uniform)', required=True)
     args = parser.parse_args()
-    main(args.default, args.regular_sys, args.special_sys, args.output, args.energy)
+    main(args.default, args.regular_sys, args.special_sys, args.output, args.energy, args.sys_divisor)
