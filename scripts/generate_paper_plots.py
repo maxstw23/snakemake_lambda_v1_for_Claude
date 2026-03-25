@@ -382,6 +382,14 @@ def plot_dv1dy_KP(dict_input, figs, input_path, **kwargs):
     return figs
 
 
+def _eff_corr_label(eff_energies: list[str]) -> str:
+    """Format eff-corrected energy list for annotation, e.g. '14.6, 19.6, 27 GeV'."""
+    if not eff_energies:
+        return ''
+    nice = [e.replace('p', '.').replace('GeV', '') for e in eff_energies]
+    return 'Eff-corr. applied for\n' + ', '.join(nice) + ' GeV'
+
+
 def plot_fig_2(dict_input, figs, input_path, **kwargs):
     files = dict_input['dv1dy_coal']
     fig_coal = plt.figure(figsize=(kwargs['ncols']*4, kwargs['nrows']*4))
@@ -466,9 +474,12 @@ def plot_fig_2(dict_input, figs, input_path, **kwargs):
         ax_coal[index_legend].errorbar([], [], yerr=[], **plot_config['kaon'])
         # ax_coal[index_legend].errorbar([], [], yerr=[], **plot_config['pion'])
         # ax_coal[index_legend].tick_params(axis='x', which='both', length=0)
-        ax_coal[index_legend].legend(fontsize=15, frameon=False, loc='center')    
+        ax_coal[index_legend].legend(fontsize=15, frameon=False, loc='center')
         ax_coal[index_legend].tick_params(**tick_params)
         # ax_coal[index_legend].annotate(r'$\bf{STAR}\;\it{Preliminary}$', xy=(0.15, 0.8), xycoords='axes fraction', fontsize=20)
+        eff_label = _eff_corr_label(dict_input.get('eff_energies', []))
+        if eff_label:
+            ax_coal[index_legend].annotate(eff_label, xy=(0.05, 0.05), fontsize=10, xycoords='axes fraction', style='italic')
     else:
         index_legend = 0
         ax_coal[index_legend].annotate('Au+Au', xy=(0.4, 0.7), fontsize=18, xycoords='axes fraction')
@@ -2288,10 +2299,12 @@ if __name__ == '__main__':
     parser.add_argument('--model_sim_urqmd', type=str, nargs='+')
     parser.add_argument('--model_sim_ampt', type=str, nargs='+')
     parser.add_argument('--output', type=str, help='a pdf report that includes all generated plots')
+    parser.add_argument('--eff_energies', type=str, nargs='*', default=[], help='energies with efficiency correction applied')
     args = parser.parse_args()
 
-    dict_input = {'invmass': args.input_invmass, 'v1fit': args.input_v1fit, 'res': args.input_res, 
+    dict_input = {'invmass': args.input_invmass, 'v1fit': args.input_v1fit, 'res': args.input_res,
                   'dv1dy_coal': args.input_dv1dy_coal, 'dv1dy_coal_xi': args.input_dv1dy_coal_xi,
-                  'model_sim_urqmd': args.model_sim_urqmd, 'model_sim_ampt': args.model_sim_ampt}
+                  'model_sim_urqmd': args.model_sim_urqmd, 'model_sim_ampt': args.model_sim_ampt,
+                  'eff_energies': args.eff_energies}
     main(dict_input, args.output)
 

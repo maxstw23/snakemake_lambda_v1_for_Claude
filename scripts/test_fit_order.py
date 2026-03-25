@@ -268,7 +268,60 @@ def main(fit_csvs: list[str], res_files: list[str], output: str) -> None:
             pdf.savefig(fig)
             plt.close(fig)
 
-        # Pages 4+ : chi2/ndf per energy (3 panels: Lambda, Lambdabar, DeltaLambda)
+        # Pages 4-6 : dv1/dy comparison (always-linear vs adaptive) per particle
+        PARTICLE_LABELS = {
+            'Lambda': r'$\Lambda$',
+            'Lambdabar': r'$\bar{\Lambda}$',
+            'DeltaLambda': r'$\Delta\Lambda$',
+        }
+        for particle in ALL_PARTICLES:
+            fig, axes = plt.subplots(len(energies_present), 1,
+                                     figsize=(10, 3.5 * len(energies_present)),
+                                     sharex=True, squeeze=False)
+            fig.suptitle(f'dv1/dy: always-linear vs adaptive  |  {PARTICLE_LABELS[particle]}',
+                         fontsize=14, y=0.995)
+            for row, energy in enumerate(energies_present):
+                ax = axes[row, 0]
+                pdata = results[energy].get(particle, {})
+                cens_ok = sorted((c for c in range(1, 10) if c in pdata),
+                                 reverse=True)  # most central first
+                if not cens_ok:
+                    ax.set_visible(False)
+                    continue
+                xc = CENTRALITIES[np.array(cens_ok) - 1]
+                lin_vals = np.array([pdata[c]['lin_a'] for c in cens_ok])
+                lin_errs = np.array([pdata[c]['lin_a_err'] for c in cens_ok])
+                # Adaptive: use cubic a when needs_cubic, else linear a
+                adp_vals = np.array([pdata[c]['cub_a'] if pdata[c]['needs_cubic']
+                                     else pdata[c]['lin_a'] for c in cens_ok])
+                adp_errs = np.array([pdata[c]['cub_a_err'] if pdata[c]['needs_cubic']
+                                     else pdata[c]['lin_a_err'] for c in cens_ok])
+                needs = [pdata[c]['needs_cubic'] for c in cens_ok]
+
+                needs_arr = np.array(needs)
+                w = 1.0
+                ax.errorbar(xc - w, lin_vals, yerr=lin_errs, fmt='s', color='C0',
+                            capsize=3, label='always linear')
+                # Adaptive: split into linear-chosen and cubic-chosen
+                if np.any(~needs_arr):
+                    ax.errorbar(xc[~needs_arr] + w, adp_vals[~needs_arr],
+                                yerr=adp_errs[~needs_arr], fmt='o', color='C3',
+                                capsize=3, label='adaptive (linear)')
+                if np.any(needs_arr):
+                    ax.errorbar(xc[needs_arr] + w, adp_vals[needs_arr],
+                                yerr=adp_errs[needs_arr], fmt='*', color='C3',
+                                capsize=3, markersize=10, label='adaptive (cubic)')
+                ax.axhline(0, color='k', ls='--', lw=0.7)
+                ax.set_xlabel('Centrality (%)', fontsize=11)
+                ax.set_ylabel(r'$dv_1/dy$', fontsize=11)
+                ax.set_title(energy, fontsize=11, loc='left')
+                if row == 0:
+                    ax.legend(fontsize=10)
+            fig.tight_layout()
+            pdf.savefig(fig)
+            plt.close(fig)
+
+        # Pages 7+ : chi2/ndf per energy (3 panels: Lambda, Lambdabar, DeltaLambda)
         for energy in energies_present:
             fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=False)
             fig.suptitle(f'$\\chi^2$/ndf — linear vs cubic  |  {energy}', fontsize=13)

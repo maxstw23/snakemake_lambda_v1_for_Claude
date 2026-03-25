@@ -14,8 +14,8 @@ data_files = {'0': {energy: sorted(glob.glob(f'data/result*_{energy}.root'), key
 # systematic files, right now only one energy and one systematic!!!
 data_files.update({str(sys_tag): {energy: sorted(glob.glob(f'data/sys_tag_{sys_tag}/result*_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in energies} for sys_tag in [1,2,3]})
 
-eff_files = {energy: sorted(glob.glob(f'data/eff/result*_lambda_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['19p6GeV', '27GeV']}
-eff_files_lambdabar = {energy: sorted(glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['19p6GeV', '27GeV'] if glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root')}
+eff_files = {energy: sorted(glob.glob(f'data/eff/result*_lambda_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['14p6GeV', '19p6GeV', '27GeV']}
+eff_files_lambdabar = {energy: sorted(glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root'), key=lambda x: int(re.search(r'\d+', x).group()))[-1] for energy in ['14p6GeV', '19p6GeV', '27GeV'] if glob.glob(f'data/eff/result*_lambdabar_exp_{energy}.root')}
 eff_files_all = {'lambda': eff_files, 'lambdabar': eff_files_lambdabar}
 rule all:
     input: 'plots/paper/report.pdf'
@@ -406,11 +406,13 @@ rule generate_paper_plots:
            model_sim_ampt=expand('result/model/ampt/data_{energy}_lambda.csv', energy=['14p6GeV'])
     output: report='plots/paper/report.pdf',
             data_points=expand('plots/paper/data_points/dv1dy_{energy}.csv', energy=energies)
+    params:
+        eff_energies=sorted(set(list(eff_files.keys()) + list(eff_files_lambdabar.keys())))
     # log: stdout='logs/sys_tag_0/generate_paper_plots.log', stderr='logs/sys_tag_0/generate_paper_plots.err'
     log: stdout='logs/final/generate_paper_plots.log', stderr='logs/final/generate_paper_plots.err'
     shell:
         """
-        python {input.script} --input_invmass {input.invmass} --input_v1fit {input.v1fit} --input_res {input.res} --input_dv1dy_coal {input.dv1dy_coal} --input_dv1dy_coal_xi {input.dv1dy_coal_xi} --model_sim_urqmd {input.model_sim_urqmd} --model_sim_ampt {input.model_sim_ampt} --output {output.report}
+        python {input.script} --input_invmass {input.invmass} --input_v1fit {input.v1fit} --input_res {input.res} --input_dv1dy_coal {input.dv1dy_coal} --input_dv1dy_coal_xi {input.dv1dy_coal_xi} --model_sim_urqmd {input.model_sim_urqmd} --model_sim_ampt {input.model_sim_ampt} --eff_energies {params.eff_energies} --output {output.report}
         python {input.script_clean} {input.invmass} {input.v1fit} > {log.stdout} 2> {log.stderr}
         """
 

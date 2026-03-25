@@ -219,10 +219,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
             if group.endswith(str(cen)):
                 v1_y_lambda_merged[group]['x'] = unumpy.nominal_values(ybin_good)
 
-        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(unumpy.nominal_values(ybin_good), unumpy.nominal_values(v1_final),
-                                                     xerr=0, yerr=unumpy.std_devs(v1_final),
-                                                     fmt='o', color='C0', capsize=2, label=r'$\Lambda$'
-                                                     )
+        _ynom = unumpy.nominal_values(ybin_good)
+        _fit_mask = np.abs(_ynom) < float(config['y_cut'])
+        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[_fit_mask], unumpy.nominal_values(v1_final[_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[_fit_mask]),
+                                                     fmt='o', color='C0', capsize=2, label=r'$\Lambda$')
+        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[~_fit_mask], unumpy.nominal_values(v1_final[~_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[~_fit_mask]),
+                                                     fmt='o', color='C0', capsize=2, markerfacecolor='white', label='_nolegend_')
         ax_1[(cen - 1) // 3, (cen - 1) % 3].hlines(0., -1., 1., color='k', linestyle='--')
         ax_1[(cen - 1) // 3, (cen - 1) % 3].annotate(f'{centralities_bins[cen]}-{centralities_bins[cen - 1]}%',
                                                      xy=(0.05, 0.85), xycoords='axes fraction', fontsize=20)
@@ -287,10 +291,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
                 v1_y_lambdabar_merged[group]['count'] += v1_count
             if group.endswith(str(cen)):
                 v1_y_lambdabar_merged[group]['x'] = unumpy.nominal_values(ybin_good)
-        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(unumpy.nominal_values(ybin_good), unumpy.nominal_values(v1_final),
-                                                     xerr=0, yerr=unumpy.std_devs(v1_final),
-                                                     fmt='o', color='C1', capsize=2, label=r'$\bar{\Lambda}$'
-                                                     )
+        _ynom = unumpy.nominal_values(ybin_good)
+        _fit_mask = np.abs(_ynom) < float(config['y_cut'])
+        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[_fit_mask], unumpy.nominal_values(v1_final[_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[_fit_mask]),
+                                                     fmt='o', color='C1', capsize=2, label=r'$\bar{\Lambda}$')
+        ax_1[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[~_fit_mask], unumpy.nominal_values(v1_final[~_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[~_fit_mask]),
+                                                     fmt='o', color='C1', capsize=2, markerfacecolor='white', label='_nolegend_')
         top_ylim = np.max(unumpy.nominal_values(v1_final) + unumpy.std_devs(v1_final))
         bot_ylim = np.min(unumpy.nominal_values(v1_final) - unumpy.std_devs(v1_final))
         current_ylim = np.max([top_ylim, -bot_ylim])
@@ -360,10 +368,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
                 # v1_y_deltalambda_merged[group]['count'] += v1_count_lambda
             if group.endswith(str(cen)):
                 v1_y_lambdabar_merged[group]['x'] = unumpy.nominal_values(ybin_good)
-        ax_delta[(cen - 1) // 3, (cen - 1) % 3].errorbar(unumpy.nominal_values(ybin_good), unumpy.nominal_values(v1_final),
-                                                     xerr=0, yerr=unumpy.std_devs(v1_final),
-                                                     fmt='o', color='C2', capsize=2, label=r'$\Delta\Lambda$'
-                                                     )
+        _ynom = unumpy.nominal_values(ybin_good)
+        _fit_mask = np.abs(_ynom) < float(config['y_cut'])
+        ax_delta[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[_fit_mask], unumpy.nominal_values(v1_final[_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[_fit_mask]),
+                                                     fmt='o', color='C2', capsize=2, label=r'$\Delta\Lambda$')
+        ax_delta[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[~_fit_mask], unumpy.nominal_values(v1_final[~_fit_mask]),
+                                                     xerr=0, yerr=unumpy.std_devs(v1_final[~_fit_mask]),
+                                                     fmt='o', color='C2', capsize=2, markerfacecolor='white', label='_nolegend_')
         ax_delta[(cen - 1) // 3, (cen - 1) % 3].set_xlabel(r'$y$', fontsize=18)
         ax_delta[(cen - 1) // 3, (cen - 1) % 3].set_ylabel(r'$v_1$', fontsize=18)
         ax_delta[(cen - 1) // 3, (cen - 1) % 3].tick_params(axis='both', labelsize=15)
@@ -435,10 +447,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
             a1_unumpy = unumpy.uarray(a1, a1_err)
             a1_final = a1_unumpy / resolution[cen - 1]
             ybin_good = ybin_unumpy[np.invert(bool_nan)]
-            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(unumpy.nominal_values(ybin_good), unumpy.nominal_values(a1_final),
-                                                         xerr=0, yerr=unumpy.std_devs(a1_final),
-                                                         fmt='o', color='C0', capsize=2, label=r'$\Lambda$'
-                                                         )
+            _ynom = unumpy.nominal_values(ybin_good)
+            _fit_mask = np.abs(_ynom) < float(config['y_cut'])
+            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[_fit_mask], unumpy.nominal_values(a1_final[_fit_mask]),
+                                                         xerr=0, yerr=unumpy.std_devs(a1_final[_fit_mask]),
+                                                         fmt='o', color='C0', capsize=2, label=r'$\Lambda$')
+            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[~_fit_mask], unumpy.nominal_values(a1_final[~_fit_mask]),
+                                                         xerr=0, yerr=unumpy.std_devs(a1_final[~_fit_mask]),
+                                                         fmt='o', color='C0', capsize=2, markerfacecolor='white', label='_nolegend_')
             ax_2[(cen - 1) // 3, (cen - 1) % 3].hlines(0., -1., 1., color='k', linestyle='--')
             ax_2[(cen - 1) // 3, (cen - 1) % 3].annotate(f'{centralities_bins[cen]}-{centralities_bins[cen - 1]}%',
                                                          xy=(0.05, 0.85), xycoords='axes fraction', fontsize=20)
@@ -492,10 +508,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
             a1_unumpy = unumpy.uarray(a1, a1_err)
             a1_final = a1_unumpy / resolution[cen - 1]
             ybin_good = ybin_unumpy[np.invert(bool_nan)]
-            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(unumpy.nominal_values(ybin_good), unumpy.nominal_values(a1_final),
-                                                         xerr=0, yerr=unumpy.std_devs(a1_final),
-                                                         fmt='o', color='C1', capsize=2, label=r'$\bar{\Lambda}$'
-                                                         )
+            _ynom = unumpy.nominal_values(ybin_good)
+            _fit_mask = np.abs(_ynom) < float(config['y_cut'])
+            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[_fit_mask], unumpy.nominal_values(a1_final[_fit_mask]),
+                                                         xerr=0, yerr=unumpy.std_devs(a1_final[_fit_mask]),
+                                                         fmt='o', color='C1', capsize=2, label=r'$\bar{\Lambda}$')
+            ax_2[(cen - 1) // 3, (cen - 1) % 3].errorbar(_ynom[~_fit_mask], unumpy.nominal_values(a1_final[~_fit_mask]),
+                                                         xerr=0, yerr=unumpy.std_devs(a1_final[~_fit_mask]),
+                                                         fmt='o', color='C1', capsize=2, markerfacecolor='white', label='_nolegend_')
             ax_2[(cen - 1) // 3, (cen - 1) % 3].set_xlabel(r'$y$', fontsize=18)
             ax_2[(cen - 1) // 3, (cen - 1) % 3].set_ylabel(r'$a_1$', fontsize=18)
             ax_2[(cen - 1) // 3, (cen - 1) % 3].tick_params(axis='both', labelsize=15)
@@ -912,9 +932,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
     dv1dy_deltalambda_merged = {}
     for i, (key, value) in enumerate(v1_merged_lambda.items()):
         m = value['y'].get_measurement()
-        ax_4[i].errorbar(unumpy.nominal_values(value['x']), unumpy.nominal_values(m),
-                         xerr=0, yerr=unumpy.std_devs(m), color='C0',
+        _xnom = unumpy.nominal_values(value['x'])
+        _fit_mask = np.abs(_xnom) < float(config['y_cut'])
+        ax_4[i].errorbar(_xnom[_fit_mask], unumpy.nominal_values(m[_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(m[_fit_mask]), color='C0',
                          fmt='o', capsize=2, label=r'$\Lambda$')
+        ax_4[i].errorbar(_xnom[~_fit_mask], unumpy.nominal_values(m[~_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(m[~_fit_mask]), color='C0',
+                         fmt='o', capsize=2, markerfacecolor='white', label='_nolegend_')
         popt, perr, rchi2 = fit(value['x'], m, method=method, range=range)
         popt_linear, perr_linear, rchi2_linear = fit(value['x'], m, method=1, range=range)
         d3 = 0
@@ -943,9 +968,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
         ax_4[i].legend()
     for i, (key, value) in enumerate(v1_merged_lambdabar.items()):
         m = value['y'].get_measurement()
-        ax_4[i].errorbar(unumpy.nominal_values(value['x']), unumpy.nominal_values(m),
-                         xerr=0, yerr=unumpy.std_devs(m), color='C1',
+        _xnom = unumpy.nominal_values(value['x'])
+        _fit_mask = np.abs(_xnom) < float(config['y_cut'])
+        ax_4[i].errorbar(_xnom[_fit_mask], unumpy.nominal_values(m[_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(m[_fit_mask]), color='C1',
                          fmt='o', capsize=2, label=r'$\bar{\Lambda}$')
+        ax_4[i].errorbar(_xnom[~_fit_mask], unumpy.nominal_values(m[~_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(m[~_fit_mask]), color='C1',
+                         fmt='o', capsize=2, markerfacecolor='white', label='_nolegend_')
         popt, perr, rchi2 = fit(value['x'], m, method=method, range=range)
         popt_linear, perr_linear, rchi2_linear = fit(value['x'], m, method=1, range=range)
         d3 = 0
@@ -976,9 +1006,14 @@ def main(paths, paths_piKp, paths_pt, fres, output, method, **kwargs):
         m_l = value['y'].get_measurement()
         m_lb = v1_merged_lambdabar[key]['y'].get_measurement()
         delta = m_l - m_lb
-        ax_4[i].errorbar(unumpy.nominal_values(value['x']), unumpy.nominal_values(delta),
-                         xerr=0, yerr=unumpy.std_devs(delta), color='C2',
+        _xnom = unumpy.nominal_values(value['x'])
+        _fit_mask = np.abs(_xnom) < float(config['y_cut'])
+        ax_4[i].errorbar(_xnom[_fit_mask], unumpy.nominal_values(delta[_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(delta[_fit_mask]), color='C2',
                          fmt='o', capsize=2, label=r'$\Delta\Lambda$')
+        ax_4[i].errorbar(_xnom[~_fit_mask], unumpy.nominal_values(delta[~_fit_mask]),
+                         xerr=0, yerr=unumpy.std_devs(delta[~_fit_mask]), color='C2',
+                         fmt='o', capsize=2, markerfacecolor='white', label='_nolegend_')
         popt, perr, rchi2 = fit(value['x'], delta, method=method, range=range)
         popt_linear, perr_linear, rchi2_linear = fit(value['x'], delta, method=1, range=range)
         d3 = 0

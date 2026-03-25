@@ -1,3 +1,4 @@
+name: lambda_v1
 channels:
   - conda-forge
   - bioconda
